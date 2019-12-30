@@ -1,0 +1,95 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+plugins {
+    id 'io.qameta.allure' version "2.7.0"
+}
+
+apply plugin: 'maven'
+apply plugin: 'java'
+
+group 'com.cucumber.test'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = '11'
+targetCompatibility = '11'
+
+allure {
+    version = '2.7.0'
+    // autoconfigure = true
+
+    aspectjweaver = true
+
+    useCucumberJVM {
+        version = '2.0-BETA21'
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    restassured_version = '3.3.0'
+    beust_version = '1.72'
+    scribe_version = '1.3.7'
+    scribejava_version = '6.3.0'
+    qameta_allure_version = '2.10.0'
+    springboot_version = '2.1.6.RELEASE'
+    oracle_version = '12.2.0.1'
+    junit_version = '5.4.1'
+    jackson_version = '2.9.8'
+    selenium_version = '3.141.59'
+    wiremock_version = '2.21.0'
+    mysql_version = '5.1.48'
+}
+
+dependencies {
+    testCompile group: 'io.qameta.allure', name: 'allure-cucumber4-jvm', version: '2.13.0'
+    compile group: 'io.cucumber', name: 'cucumber-junit', version: '4.8.0'
+    compile group: 'io.cucumber', name: 'cucumber-java', version: '4.8.0'
+    compile group: 'io.cucumber', name: 'cucumber-spring', version: '4.8.0'
+   /* compile group: 'info.cukes', name: 'cucumber-junit', version: '1.2.6', ext: 'pom'
+    compile group: 'info.cukes', name: 'cucumber-java', version: '1.2.6', ext: 'pom'
+    compile group: 'info.cukes', name: 'cucumber-core', version: '1.2.6', ext: 'pom'
+    compile group: 'info.cukes', name: 'gherkin', version: '2.12.2'
+    compile group: 'info.cukes', name: 'cucumber-spring', version: '1.2.6', ext: 'pom' */
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springboot_version
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springboot_version
+
+}
+/*
+task runner(type: Test)  {
+    include "Runner.class"
+} */
+ 
+test {
+    //useJUnit()
+    systemProperty "cucumber.options", System.getProperty("cucumber.options")
+}
+
+/*
+task unitTest( type: Test ) {
+    systemProperty "cucumber.options", System.getProperty("cucumber.options")
+} */
+
+
+configurations {
+    cucumberRuntime {
+        extendsFrom testRuntime
+    }
+}
+
+task cucumber() {
+    dependsOn assemble, compileTestJava
+    doLast {
+        javaexec {
+            main = "io.cucumber.core.cli.Main"
+            classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+            args = ['--plugin', 'pretty', '--glue', 'gradle.cucumber', 'src/test/resources']
+        }
+    }
+}
